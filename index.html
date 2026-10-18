@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ER Modeling Quiz: Terms and Shapes</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2433;--mu:#6b7385;--bd:#d9dde8;--ac:#4f46e5;--gb:#dcfce7;--gt:#166534;--gc:#22c55e;--rb:#fee2e2;--rt:#991b1b;--rc:#ef4444;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1c2030;--tx:#e8ebf5;--mu:#98a0b5;--bd:#2f364c;--ac:#818cf8;--gb:#14351f;--gt:#86efac;--rb:#3f1717;--rt:#fca5a5}}
+:root[data-theme="dark"]{--bg:#12141c;--card:#1c2030;--tx:#e8ebf5;--mu:#98a0b5;--bd:#2f364c;--ac:#818cf8;--gb:#14351f;--gt:#86efac;--rb:#3f1717;--rt:#fca5a5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.w{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.2rem;margin:0 0 4px}
+.sub{color:var(--mu);font-size:.85rem;margin-bottom:14px}
+.bar{height:8px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--mu);font-size:.85rem;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px}
+.q{font-size:1.05rem;font-weight:600;margin:0 0 16px}
+.sm{color:var(--mu);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.o{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:2px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.o:hover:not(:disabled){border-color:var(--ac)}
+.o b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--bd);display:grid;place-items:center;font-size:.8rem}
+.o.sel{border-color:var(--ac)}
+.o.ok{background:var(--gb);border-color:var(--gc);color:var(--gt)}
+.o.bad{background:var(--rb);border-color:var(--rc);color:var(--rt)}
+.o:disabled{cursor:default}
+.row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+button.b{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600}
+button.b:disabled{opacity:.4;cursor:default}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+.sp{flex:1}
+.fb{margin-top:12px;font-weight:600;min-height:1.4em}
+.hint{color:var(--mu);font-size:.78rem;margin-top:14px}
+.big{font-size:3rem;font-weight:800;text-align:center;margin:10px 0}
+.c{text-align:center}
+.m{display:block;width:100%;margin-bottom:10px;text-align:left}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>ER Modeling Quiz</h1>
+<div class="sub">Terms, shapes and SQL · Chapters 6–7</div>
+<div class="bar"><i id="bar"></i></div>
+<div class="meta"><span id="num"></span><span id="score"></span></div>
+<div class="card" id="card"></div>
+<div class="hint">Tip: press A–D to choose, Enter to submit, ← → to move between questions.</div>
+</div>
+<script>
+const T=`ER (Entity Relationship) Model|A CONCEPTUAL model for designing databases that represents the logical structure of a database: entities, their attributes, and the relationships between them.
+Entity|An object that is stored as data (e.g., Student, Course, Company). Think of entities as NOUNS.
+Attribute|Properties that describe an entity (e.g., StudentID, CourseName, EmployeeEmail).
+Relationship|A connection between entities (e.g., ‘a Student enrolls in a Course’). Think of relationships as VERBS.
+ERD (Entity Relationship Diagram)|Graphical representation of an ER model: a visual schema of the entities, attributes, and relationships.
+Entity type|A group of definable things (e.g., students, athletes, customers, cars, products); the entity is the specific student or athlete.
+Entity set|Same as entity type but defined at a particular point in time (e.g., students enrolled in a class on the first day).
+Instance|The specific person or car that belongs to the entity set.
+Strong entity|Can be defined solely by its own attributes.
+Weak entity|Cannot be defined solely by its own attributes.
+Associative entity|Often called a BRIDGE TABLE or JUNCTION TABLE. Must have a primary key that uniquely identifies each record.
+Composite primary key|The PK is made of the foreign keys referencing the two (or more) parent entities (e.g., StudentCourse linking Student and Course).
+Surrogate primary key|Designers add a separate PK column (like id) while still keeping the foreign keys.
+Super key|A set of attributes (one or more) that together define an entity in an entity set.
+Candidate key|A MINIMAL super key (the least possible number of attributes to still be a super key).
+Primary key|A candidate key chosen by the database designer to uniquely identify the entity set. No two records share the same PK value.
+Foreign key|Identifies the relationship between entities; creates a link between tables by referencing a primary key in another table.
+Strong relationship|Connects two independent entities; neither requires the other for its existence; solid-line diamond.
+Weak relationship|Identifying relationship (solid line) between a strong and a weak entity, or between two weak entities; the child’s primary key includes part of the parent’s key (double diamond).
+Simple attribute|Single, atomic value that cannot be meaningfully divided (e.g., phone number stored as one complete value).
+Composite attribute|Can be divided into smaller attributes that still provide useful information (e.g., Name = First Name, Middle Name, Last Name).
+Derived attribute|Value obtained or calculated from another attribute/stored information; need not be stored (e.g., Age derived from Date of Birth).
+Multi-valued attribute|More than one value for a single entity (e.g., personal, work, alternate phone numbers).
+Single-valued attribute|Only one value per entity at a given time (e.g., one student ID number per student).
+Key attribute|Uniquely identifies the entity; shown as an oval with the text UNDERLINED.
+Cardinality|The degree of relationship: defines the numerical attributes of the relationship between two entities or entity sets.
+Chen’s notation|Developed by PETER CHEN in 1976, who pioneered using ER concepts in system design.
+Crow’s foot notation|Developed in the late 1970s; name comes from symbols that resemble a bird’s foot. Also known as Information Engineering (IE) notation.
+Identifier|The attribute(s) that uniquely distinguish an instance, usually marked with an ASTERISK (*).
+DESC|Describes (shows) the structure of a table: Field, Type, Null, Key, Default, Extra.
+NOT NULL|Value is required (Null = NO). Without it the column allows NULL (e.g., mname).
+DEFAULT CURRENT_TIMESTAMP|Fills the column with the current date/time when none is supplied (DEFAULT_GENERATED).`.split("\n").map(l=>l.split("|"));
+
+const S=`TIMESTAMPDIFF|Returns the difference between two dates or datetimes in a chosen unit, e.g., TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) gives an age.
+CONCAT_WS|Joins values into one string with a separator placed between them, e.g., CONCAT_WS(' ', fname, mname, lname). NULL values are skipped.
+BETWEEN|Filters values inside an inclusive range, e.g., price BETWEEN 100 AND 500.
+ORDER BY|Sorts the result rows by one or more columns, ascending (ASC, the default) or descending (DESC).
+LIKE|Searches a column for a pattern using the wildcards % (any number of characters) and _ (exactly one character).
+IN|Matches a value against any value in a list, e.g., customer_id IN (1, 3, 4).
+NOT IN|Excludes rows whose value matches any value in a list, e.g., customer_id NOT IN (1, 3).
+IS NULL|Tests whether a column has no value (NULL). Writing = NULL does not work.
+AND|Combines conditions; a row is returned only when ALL the conditions are true.
+OR|Combines conditions; a row is returned when AT LEAST ONE condition is true.`.split("\n").map(l=>l.split("|"));
+const LP=[["'J%'","Values that start with J"],["'%J'","Values that end with J"],["'%J%'","Values that contain J anywhere"]];
+const svg=(b,w)=>`<svg viewBox="0 0 ${w} 70" width="${w*1.5}" height="105" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 16px;max-width:100%">${b}</svg>`;
+const E=`<ellipse cx="60" cy="35" rx="45" ry="22"`;
+const D=(a,b,c,d)=>`<polygon points="${a},${b} ${c},35 ${a},${d} ${60-(c-60)},35"/>`;
+const chen=[
+["Entity (rectangle)",`<rect x="20" y="15" width="80" height="40"/>`],
+["Weak entity (double rectangle)",`<rect x="15" y="8" width="90" height="54"/><rect x="21" y="14" width="78" height="42"/>`],
+["Associative entity (diamond in rectangle)",`<rect x="8" y="8" width="104" height="54"/>`+D(60,13,100,57)],
+["Attribute (oval)",E+`/>`],
+["Key attribute (underlined text)",E+`/><text x="60" y="40" text-anchor="middle" fill="currentColor" stroke="none" text-decoration="underline" font-size="14">id</text>`],
+["Derived attribute (dashed oval)",E+` stroke-dasharray="6 4"/>`],
+["Multivalued attribute (double oval)",E+`/><ellipse cx="60" cy="35" rx="39" ry="17"/>`],
+["Relationship (diamond)",D(60,6,110,64)],
+["Weak relationship (double diamond)",D(60,6,110,64)+D(60,14,96,56)]
+].map(([n,b])=>[n,svg(b,120)]);
+const bar=x=>`<line x1="${x}" y1="22" x2="${x}" y2="48"/>`,foot=`<path d="M105 35L130 14M105 35L130 35M105 35L130 56"/>`,circ=x=>`<circle cx="${x}" cy="35" r="7" fill="var(--card)"/>`;
+const cf=b=>svg(`<line x1="5" y1="35" x2="130" y2="35"/><rect x="130" y="10" width="45" height="50"/>`+b,180);
+const crow=[
+["One (mandatory)",cf(bar(112))],
+["Exactly one (double bar)",cf(bar(112)+bar(100))],
+["Many (crow’s foot)",cf(foot)],
+["Zero or one (circle + bar)",cf(bar(112)+circ(94))],
+["Zero or many (circle + foot)",cf(foot+circ(92))],
+["One or many (bar + foot)",cf(foot+bar(92))]];
+
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function mk(correct,pool){const o=sh([correct,...sh(pool.filter(x=>x!==correct)).slice(0,3)]);return{o,a:o.indexOf(correct)}}
+function build(mode){
+  let L=[];
+  if(mode==="all"||mode==="terms")T.forEach(([t,d])=>L.push({h:`<div class="sm">Which term is described?</div><p class="q">${esc(d)}</p>`,...mk(t,T.map(x=>x[0]))}));
+  if(mode==="all"||mode==="shapes"){
+    chen.forEach(([n,s])=>L.push({h:`<div class="sm">Chen’s notation</div><p class="q">What does this shape represent?</p>${s}`,...mk(n,chen.map(x=>x[0]))}));
+    crow.forEach(([n,s])=>L.push({h:`<div class="sm">Crow’s foot notation</div><p class="q">Identify the symbol at the end of the line (next to the box).</p>${s}`,...mk(n,crow.map(x=>x[0]))}));
+  }
+  if(mode==="all"||mode==="sql"){
+    S.forEach(([t,d])=>L.push({h:`<div class="sm">SQL</div><p class="q">Which SQL keyword or function is described?</p><p class="q" style="font-weight:400">${esc(d)}</p>`,...mk(t,S.map(x=>x[0]))}));
+    LP.forEach(([p,m])=>L.push({h:`<div class="sm">SQL · LIKE</div><p class="q">What does <code>WHERE name LIKE ${p}</code> return?</p>`,...mk(m,[...LP.map(x=>x[1]),"Values that are exactly J"])}));
+  }
+  return sh(L);
+}
+let Q=[],st=[],i=0,timer=null;
+const $=id=>document.getElementById(id),esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function menu(){
+  clearTimeout(timer);Q=[];$("num").textContent="";$("score").textContent="";$("bar").style.width="0";
+  $("card").innerHTML=`<div class="q">Choose a quiz</div>
+  <button class="b m" data-m="all">All: terms + shapes + SQL (${T.length+chen.length+crow.length+S.length+LP.length} questions)</button>
+  <button class="b m" data-m="terms">Terms and definitions (${T.length} questions)</button>
+  <button class="b m" data-m="shapes">Shapes and symbols (${chen.length+crow.length} questions)</button>
+  <button class="b m" data-m="sql">SQL keywords: TIMESTAMPDIFF, LIKE, IN, AND… (${S.length+LP.length} questions)</button>`;
+  $("card").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
+}
+function start(m){mode=m;Q=build(m);st=Q.map(()=>({sel:null,done:false,shown:false}));i=0;render()}
+let mode="all";
+function render(){
+  if(!Q.length)return;
+  const q=Q[i],s=st[i];
+  const sc=st.filter((x,k)=>x.done&&x.sel===Q[k].a).length,dn=st.filter(x=>x.done).length;
+  $("num").textContent=`Question ${i+1} of ${Q.length}`;
+  $("score").textContent=`Score: ${sc} / ${dn}`;
+  $("bar").style.width=(dn/Q.length*100)+"%";
+  let h=q.h;
+  q.o.forEach((t,k)=>{
+    let c="o";
+    if(s.done||s.shown){if(k===q.a)c+=" ok";else if(k===s.sel)c+=" bad"}
+    else if(k===s.sel)c+=" sel";
+    h+=`<button class="${c}" data-k="${k}" ${s.done||s.shown?"disabled":""}><b>${"ABCD"[k]}</b><span>${esc(t)}</span></button>`;
+  });
+  const fb=s.done?(s.sel===q.a?"✓ Correct!":`✗ Wrong. Correct answer: ${"ABCD"[q.a]}`):s.shown?`Correct answer: ${"ABCD"[q.a]}`:"";
+  h+=`<div class="fb" style="color:${s.done&&s.sel!==q.a?"var(--rt)":"var(--gt)"}">${fb}</div>
+  <div class="row"><button class="b" id="prev" ${i===0?"disabled":""}>← Back</button>
+  <button class="b" id="show" ${s.done||s.shown?"disabled":""}>Show</button><span class="sp"></span>
+  <button class="b p" id="sub" ${s.done||s.shown||s.sel===null?"disabled":""}>Submit</button>
+  <button class="b" id="next" ${i===Q.length-1?"disabled":""}>Next →</button></div>
+  <div class="row"><button class="b" id="menu">Menu</button></div>`;
+  $("card").innerHTML=h;
+  $("card").querySelectorAll(".o").forEach(b=>b.onclick=()=>choose(+b.dataset.k));
+  $("prev").onclick=()=>go(i-1);$("next").onclick=()=>go(i+1);$("show").onclick=show;$("sub").onclick=submit;$("menu").onclick=menu;
+}
+function choose(k){const s=st[i];if(s.done||s.shown)return;s.sel=k;render()}
+function submit(){
+  if(!Q.length)return;const s=st[i];if(s.done||s.shown||s.sel===null)return;
+  s.done=true;render();clearTimeout(timer);
+  timer=setTimeout(()=>{if(i<Q.length-1)go(i+1);else results()},1600);
+}
+function show(){const s=st[i];if(s.done||s.shown)return;s.shown=true;render()}
+function go(n){clearTimeout(timer);if(n<0||n>=Q.length)return;i=n;render()}
+function results(){
+  const sc=st.filter((x,k)=>x.done&&x.sel===Q[k].a).length;
+  $("card").innerHTML=`<div class="c"><div style="font-weight:600">Quiz finished</div><div class="big">${sc} / ${Q.length}</div><div class="sub">${Math.round(sc/Q.length*100)}% correct</div>
+  <div class="row" style="justify-content:center"><button class="b" id="rev">Review answers</button><button class="b p" id="re">Retake</button><button class="b" id="mn">Menu</button></div></div>`;
+  $("rev").onclick=()=>go(0);$("re").onclick=()=>start(mode);$("mn").onclick=menu;
+}
+document.addEventListener("keydown",e=>{
+  if(!Q.length)return;
+  if(e.key==="Enter"){e.preventDefault();submit()}
+  else if(e.key==="ArrowRight")go(i+1);
+  else if(e.key==="ArrowLeft")go(i-1);
+  else if(e.key.length===1&&"abcd".includes(e.key.toLowerCase()))choose("abcd".indexOf(e.key.toLowerCase()));
+});
+menu();
+</script>
+</body>
+</html>
